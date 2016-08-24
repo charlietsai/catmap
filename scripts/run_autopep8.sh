@@ -6,12 +6,13 @@
 #                          https://www.python.org/dev/peps/pep-0008/
 #
 # USAGE:
-# - run_autopep8.sh [optional source directory, defaults to the directory above script/
+# - run_autopep8.sh [optional source directory, defaults to the directory above scripts/]
 ####################################################################################################
 
 #...................................................................................................
 # CONFIGURATION
 #...................................................................................................
+
 DEFAULT_SOURCE_DIR=${PWD}/../
 SOURCE_DIR=${DEFAULT_SOURCE_DIR:-1}
 PYTHON_FILES=$(find ${SOURCE_DIR} -name "*py")
