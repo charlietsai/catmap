@@ -10,44 +10,44 @@ string2symbols = catmap.string2symbols
 class ScalerBase(ReactionModelWrapper):
 
     def __init__(self, reaction_model=None):
-        """Class for `scaling' descriptors to free energies of reaction and 
-        activation (or other parameters). This class acts as a base class 
-        to be inherited by other scaler classes, but is not 
-        functional on its own. 
+        """Class for `scaling' descriptors to free energies of reaction and
+        activation (or other parameters). This class acts as a base class
+        to be inherited by other scaler classes, but is not
+        functional on its own.
 
-        This class contains the description of the microkinetic model 
-        (adsorbate_names, gas_names, etc.) along with the temperature and 
-        gas_pressures. In most cases these will automatically be populated 
-        by the parent reaction_model class. 
+        This class contains the description of the microkinetic model
+        (adsorbate_names, gas_names, etc.) along with the temperature and
+        gas_pressures. In most cases these will automatically be populated
+        by the parent reaction_model class.
         The scaler-specific attributes are:
 
-        gas_energies: defines the energies of the gas-phase species. 
+        gas_energies: defines the energies of the gas-phase species.
             This sets the references for the system.
-        gas_thermo_mode: the mode for obtaining thermal contributions in 
+        gas_thermo_mode: the mode for obtaining thermal contributions in
             the gas phase. Default is to use the ideal gas approxmation.
-        adsorbate_thermo_mode: the mode for obtaining thermal contributions 
-            from adsorbed species. Default is to use the harmonic 
+        adsorbate_thermo_mode: the mode for obtaining thermal contributions
+            from adsorbed species. Default is to use the harmonic
             adsorbate approximation.
-        frequency_dict: a dictionary of vibrational frequencies (in eV) for 
-            each gas/adsorbate. Should be of the form 
-            frequency_dict[ads] = [freq1, freq2,...]. Needed for ideal gas or 
+        frequency_dict: a dictionary of vibrational frequencies (in eV) for
+            each gas/adsorbate. Should be of the form
+            frequency_dict[ads] = [freq1, freq2,...]. Needed for ideal gas or
             harmonic adsorbate approximations.
 
         A functional derived scaler class must also contain the methods:
 
-        get_electronic_energies(descriptors): a function to `scale' the 
-            descriptors to electronic energies. Returns a dictionary of 
+        get_electronic_energies(descriptors): a function to `scale' the
+            descriptors to electronic energies. Returns a dictionary of
             the electronic energies of each species in the model.
-        get_energetics(descriptors): a function to obtain the reaction 
-            energetics from the descriptors. Should return a list of 
-            length N (number of elementary reactions): 
+        get_energetics(descriptors): a function to obtain the reaction
+            energetics from the descriptors. Should return a list of
+            length N (number of elementary reactions):
             [[E_rxn1,E_a1],[E_rxn2,E_a2],...[E_rxnN,E_aN]]
-        get_rxn_parameters(descriptors): a function to obtain all necessary 
-            reaction parameters from the descriptors. Should return a list of 
-            length N (number of elementary reactions): 
-            [[param1_rxn1,param2_rxn1...]...[param1_rxnN,param2_rxnN...]]. 
-            For a simple model this could be the same as get_energetics, 
-            but models accounting for interactions may require more 
+        get_rxn_parameters(descriptors): a function to obtain all necessary
+            reaction parameters from the descriptors. Should return a list of
+            length N (number of elementary reactions):
+            [[param1_rxn1,param2_rxn1...]...[param1_rxnN,param2_rxnN...]].
+            For a simple model this could be the same as get_energetics,
+            but models accounting for interactions may require more
             parameters which can be scaled.
         """
         if reaction_model is None:
@@ -150,6 +150,18 @@ class ScalerBase(ReactionModelWrapper):
                 elif E_DFT is None:
                     raise ValueError('No formation energy for ' + key)
                 free_energy_dict[key] = E_DFT + G
+
+        # HACK: To add a custom correction on top of free energy for a species
+        _hack_species = 'H-HCOOH'
+        _hack_correction = -0.2          # eV
+        _hack_descriptor_start = 2.0    # eV
+        _hack_descriptor_end = 2.6      # eV
+        if _hack_species in free_energy_dict and descriptors[0] > _hack_descriptor_start:
+            delta_descriptor = descriptors[0] - _hack_descriptor_start
+            corr = ((delta_descriptor * _hack_correction) /
+                    (_hack_descriptor_end - _hack_descriptor_start))
+            free_energy_dict[_hack_species] += corr
+
         self._gas_energies = [free_energy_dict[g] for g in self.gas_names]
         self._site_energies = [free_energy_dict.get(s, 0) for s in self.site_names]
         return free_energy_dict
