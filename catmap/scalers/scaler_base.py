@@ -152,20 +152,18 @@ class ScalerBase(ReactionModelWrapper):
                 free_energy_dict[key] = E_DFT + G
 
         # HACK: To add a custom correction on top of free energy for a species
-        _hack_species = 'H-HCOOH_s'
-        _hack_correction = -0.31                # eV
-        _hack_descriptor_start = (2.0, -0.5)    # eV
-        _hack_descriptor_end = (2.6, 0.0)       # eV
+        _hack_species = self._rxm._hack_species
+        _hack_correction = self._rxm._hack_correction
+        _hack_descriptor_start = self._rxm._hack_descriptor_start
+        _hack_descriptor_end = self._rxm._hack_descriptor_end
         if (_hack_species in free_energy_dict and
-           (descriptors[0] >= _hack_descriptor_start[0] and descriptors[1] >= _hack_descriptor_start[1]) and
-           (descriptors[0] <= _hack_descriptor_end[0] and descriptors[1] <= _hack_descriptor_end[1])):
-            
-            print('old', descriptors[0], free_energy_dict[_hack_species])
+            (descriptors[0] >= _hack_descriptor_start[0] and descriptors[1] >= _hack_descriptor_start[1]) and
+                (descriptors[0] <= _hack_descriptor_end[0] and descriptors[1] <= _hack_descriptor_end[1])):
+
             delta_descriptor = descriptors[0] - _hack_descriptor_start[0]
             corr = ((delta_descriptor * _hack_correction) /
                     (_hack_descriptor_end[0] - _hack_descriptor_start[0]))
             free_energy_dict[_hack_species] += corr
-            print('new', descriptors[0], free_energy_dict[_hack_species])
 
         self._gas_energies = [free_energy_dict[g] for g in self.gas_names]
         self._site_energies = [free_energy_dict.get(s, 0) for s in self.site_names]
