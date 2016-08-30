@@ -6,6 +6,10 @@ re = catmap.re
 copy = catmap.copy
 string2symbols = catmap.string2symbols
 
+_MISSING_ATTR_MSG = ('Scaler class does not contain this method.'
+                     'Please ensure that it is defined in order for the scaler'
+                     'to be useful.')
+
 
 class ScalerBase(ReactionModelWrapper):
 
@@ -116,19 +120,13 @@ class ScalerBase(ReactionModelWrapper):
             self.output_labels['interaction_matrix'] = [all_names, all_names]
 
     def get_energetics(self, descriptors):
-        raise AttributeError('Scaler class does not contain this method. \
-                Please ensure that it is defined in order for the scaler \
-                to be useful.')
+        raise AttributeError(_MISSING_ATTR_MSG)
 
     def get_rxn_parameters(self, descriptors):
-        raise AttributeError('Scaler class does not contain this method. \
-                Please ensure that it is defined in order for the scaler \
-                to be useful.')
+        raise AttributeError(_MISSING_ATTR_MSG)
 
     def get_electronic_energies(self, descriptors):
-        raise AttributeError('Scaler class does not contain this method. \
-                Please ensure that it is defined in order for the scaler \
-                to be useful.')
+        raise AttributeError(_MISSING_ATTR_MSG)
 
     def get_thermodynamic_energies(self, **kwargs):
         thermo_dict = self.thermodynamics.get_thermodynamic_corrections(
@@ -152,14 +150,14 @@ class ScalerBase(ReactionModelWrapper):
                 free_energy_dict[key] = E_DFT + G
 
         # HACK: To add a custom correction on top of free energy for a species
-        _hack_species = 'H-HCOOH_s'
-        _hack_correction = -0.31                # eV
-        _hack_descriptor_start = (2.0, -0.5)    # eV
-        _hack_descriptor_end = (2.6, 0.0)       # eV
+        _hack_species = self._rxm._hack_species
+        _hack_correction = self._rxm._hack_correction
+        _hack_descriptor_start = self._rxm._hack_descriptor_start
+        _hack_descriptor_end = self._rxm._hack_descriptor_end
         if (_hack_species in free_energy_dict and
-           (descriptors[0] >= _hack_descriptor_start[0] and descriptors[1] >= _hack_descriptor_start[1]) and
-           (descriptors[0] <= _hack_descriptor_end[0] and descriptors[1] <= _hack_descriptor_end[1])):
-            
+                (descriptors[0] >= _hack_descriptor_start[0] and descriptors[1] >= _hack_descriptor_start[1]) and
+                (descriptors[0] <= _hack_descriptor_end[0] and descriptors[1] <= _hack_descriptor_end[1])):
+
             delta_descriptor = descriptors[0] - _hack_descriptor_start[0]
             corr = ((delta_descriptor * _hack_correction) /
                     (_hack_descriptor_end[0] - _hack_descriptor_start[0]))
