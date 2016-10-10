@@ -166,11 +166,11 @@ class ScalerBase(ReactionModelWrapper):
                     descriptors[1] >= _hack_descriptor_start[1] and
                     descriptors[1] <= _hack_descriptor_end[1]):
 
-                delta_descriptor = descriptors[0] - _hack_descriptor_start[0]
-                corr = ((delta_descriptor * _hack_correction) /
-                        (_hack_descriptor_end[0] - _hack_descriptor_start[0]))
-                free_energy_dict[_hack_species] += corr
-                # free_energy_dict[_hack_species] += _hack_correction
+                # delta_descriptor = descriptors[0] - _hack_descriptor_start[0]
+                # corr = ((delta_descriptor * _hack_correction) /
+                #         (_hack_descriptor_end[0] - _hack_descriptor_start[0]))
+                # free_energy_dict[_hack_species] += corr
+                free_energy_dict[_hack_species] += _hack_correction
 
         self._gas_energies = [free_energy_dict[g] for g in self.gas_names]
         self._site_energies = [free_energy_dict.get(s, 0) for s in self.site_names]
